@@ -87,7 +87,7 @@ def download_videos(args):
         outFolder = '%s/%s'%(args.visualOrigPathAVA, dataType)
 
         for fileName in fileList:
-            local_file_path = os.path.join(outFolder, dataType, fileName)
+            local_file_path = os.path.join(outFolder, fileName)
             if os.path.isfile(local_file_path):
                 print(f"{local_file_path} already exists")
             else:
