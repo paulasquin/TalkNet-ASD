@@ -85,9 +85,14 @@ def download_videos(args):
     for dataType in ['trainval', 'test']:
         fileList = open('%s/%s_file_list.txt'%(args.trialPathAVA, dataType)).read().splitlines()   
         outFolder = '%s/%s'%(args.visualOrigPathAVA, dataType)
+        
         for fileName in fileList:
-            cmd = "wget -P %s https://s3.amazonaws.com/ava-dataset/%s/%s"%(outFolder, dataType, fileName)
-            subprocess.call(cmd, shell=True, stdout=None)
+            local_file_path = os.path.join(outFolder, dataType, fileName)
+            if os.path.isfile(local_file_path):
+                print(f"{local_file_path} already exists")
+            else:
+                cmd = "wget -P %s https://s3.amazonaws.com/ava-dataset/%s/%s"%(outFolder, dataType, fileName)
+                subprocess.call(cmd, shell=True, stdout=None)
 
 def extract_audio(args):
     # Take 1 hour to extract the audio from movies
