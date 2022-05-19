@@ -215,6 +215,7 @@ def evaluate_network(files, args):
 	allScores = []
 	# durationSet = {1,2,4,6} # To make the result more reliable
 	durationSet = {1,1,1,2,2,2,3,3,4,5,6} # Use this line can get more reliable result
+	inference_time = 0
 	for file in tqdm.tqdm(files, total = len(files)):
 		fileName = os.path.splitext(file.split('/')[-1])[0] # Load audio and video
 		_, audio = wavfile.read(os.path.join(args.pycropPath, fileName + '.wav'))
@@ -255,7 +256,8 @@ def evaluate_network(files, args):
 			allScore.append(scores)
 		allScore = numpy.round((numpy.mean(numpy.array(allScore), axis = 0)), 1).astype(float)
 		allScores.append(allScore)
-		print(f"Inference took {round(time.time() - top, 2)}s for file {file}")
+		inference_time += round(time.time() - top, 2)
+	print(f"Inference took {inference_time}s")
 	return allScores
 
 def visualization(tracks, scores, args):
@@ -451,7 +453,6 @@ def main():
 	files.sort()
 	top = time.time()
 	scores = evaluate_network(files, args)
-	top = time.time()
 	print(f"Evaluation took {round(time.time() - top, 2)}s")
 	savePath = os.path.join(args.pyworkPath, 'scores.pckl')
 	with open(savePath, 'wb') as fil:
