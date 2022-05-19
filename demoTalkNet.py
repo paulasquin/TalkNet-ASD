@@ -447,7 +447,9 @@ def main():
 	# Active Speaker Detection by TalkNet
 	files = glob.glob("%s/*.avi"%args.pycropPath)
 	files.sort()
+	top = time.time()
 	scores = evaluate_network(files, args)
+	print(f"Evaluation took {round(time.time() - top, 2)}s")
 	savePath = os.path.join(args.pyworkPath, 'scores.pckl')
 	with open(savePath, 'wb') as fil:
 		pickle.dump(scores, fil)
