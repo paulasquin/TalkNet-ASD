@@ -236,8 +236,10 @@ def evaluate_network(files, args):
 		audioFeature = audioFeature[:int(round(length * 100)),:]
 		videoFeature = videoFeature[:int(round(length * 25)),:,:]
 		allScore = [] # Evaluation use TalkNet
+		top = time.time()
 		for duration in durationSet:
 			batchSize = int(math.ceil(length / duration))
+			print(f"Batch size: {batchSize}")
 			scores = []
 			with torch.no_grad():
 				for i in range(batchSize):
@@ -253,7 +255,8 @@ def evaluate_network(files, args):
 					scores.extend(score)
 			allScore.append(scores)
 		allScore = numpy.round((numpy.mean(numpy.array(allScore), axis = 0)), 1).astype(float)
-		allScores.append(allScore)	
+		allScores.append(allScore)
+		print(f"Inference took {round(time.time() - top, 2)}s for file {file}")
 	return allScores
 
 def visualization(tracks, scores, args):
@@ -449,6 +452,7 @@ def main():
 	files.sort()
 	top = time.time()
 	scores = evaluate_network(files, args)
+	top = time.time()
 	print(f"Evaluation took {round(time.time() - top, 2)}s")
 	savePath = os.path.join(args.pyworkPath, 'scores.pckl')
 	with open(savePath, 'wb') as fil:
