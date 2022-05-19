@@ -1,4 +1,7 @@
 # Other files
+*.avi
+*.mp4
+*.jpg
 *.model
 *.pth
 *.wav
