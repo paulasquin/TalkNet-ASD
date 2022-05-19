@@ -239,7 +239,6 @@ def evaluate_network(files, args):
 		top = time.time()
 		for duration in durationSet:
 			batchSize = int(math.ceil(length / duration))
-			print(f"Batch size: {batchSize}")
 			scores = []
 			with torch.no_grad():
 				for i in range(batchSize):
