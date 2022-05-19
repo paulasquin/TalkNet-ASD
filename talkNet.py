@@ -9,11 +9,20 @@ from model.talkNetModel import talkNetModel
 
 class talkNet(nn.Module):
     def __init__(self, lr = 0.0001, lrDecay = 0.95, **kwargs):
-        super(talkNet, self).__init__()        
+        super(talkNet, self).__init__()
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        """
         self.model = talkNetModel().cuda()
         self.lossAV = lossAV().cuda()
         self.lossA = lossA().cuda()
         self.lossV = lossV().cuda()
+        """
+        self.model = talkNetModel().to(self.device)
+        self.lossAV = lossAV().to(self.device)
+        self.lossA = lossA().to(self.device)
+        self.lossV = lossV().to(self.device)
+
         self.optim = torch.optim.Adam(self.parameters(), lr = lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optim, step_size = 1, gamma=lrDecay)
         print(time.strftime("%m-%d %H:%M:%S") + " Model para number = %.2f"%(sum(param.numel() for param in self.model.parameters()) / 1024 / 1024))
@@ -80,7 +89,12 @@ class talkNet(nn.Module):
 
     def loadParameters(self, path):
         selfState = self.state_dict()
-        loadedState = torch.load(path)
+        print("Device:", self.device)
+        if torch.cuda.is_available():
+            loadedState = torch.load(path)
+        else:
+            loadedState = torch.load(path, map_location=self.device)
+            
         for name, param in loadedState.items():
             origName = name;
             if name not in selfState:
