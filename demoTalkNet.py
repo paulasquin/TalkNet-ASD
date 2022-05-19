@@ -38,6 +38,8 @@ parser.add_argument('--colSavePath',           type=str, default="/data08/col", 
 
 args = parser.parse_args()
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 if os.path.isfile(args.pretrainModel) == False: # Download the pretrained model
     Link = "1AbN9fCf9IexMxEKXLQY2KYBlb-IhSEea"
     cmd = "gdown --id %s -O %s"%(Link, args.pretrainModel)
@@ -94,7 +96,7 @@ def scene_detect(args):
 
 def inference_video(args):
 	# GPU: Face detection, output is the list contains the face location and score in this frame
-	DET = S3FD(device='cuda')
+	DET = S3FD(device=device)
 	flist = glob.glob(os.path.join(args.pyframesPath, '*.jpg'))
 	flist.sort()
 	dets = []
@@ -239,8 +241,10 @@ def evaluate_network(files, args):
 			scores = []
 			with torch.no_grad():
 				for i in range(batchSize):
-					inputA = torch.FloatTensor(audioFeature[i * duration * 100:(i+1) * duration * 100,:]).unsqueeze(0).cuda()
-					inputV = torch.FloatTensor(videoFeature[i * duration * 25: (i+1) * duration * 25,:,:]).unsqueeze(0).cuda()
+					# inputA = torch.FloatTensor(audioFeature[i * duration * 100:(i+1) * duration * 100,:]).unsqueeze(0).cuda()
+					# inputV = torch.FloatTensor(videoFeature[i * duration * 25: (i+1) * duration * 25,:,:]).unsqueeze(0).cuda()
+					inputA = torch.FloatTensor(audioFeature[i * duration * 100:(i+1) * duration * 100,:]).unsqueeze(0).to(device)
+					inputV = torch.FloatTensor(videoFeature[i * duration * 25: (i+1) * duration * 25,:,:]).unsqueeze(0).to(device)
 					embedA = s.model.forward_audio_frontend(inputA)
 					embedV = s.model.forward_visual_frontend(inputV)	
 					embedA, embedV = s.model.forward_cross_attention(embedA, embedV)
@@ -281,6 +285,8 @@ def visualization(tracks, scores, args):
 		(os.path.join(args.pyaviPath, 'video_only.avi'), os.path.join(args.pyaviPath, 'audio.wav'), \
 		args.nDataLoaderThread, os.path.join(args.pyaviPath,'video_out.avi'))) 
 	output = subprocess.call(command, shell=True, stdout=None)
+	command2 = (f"ffmpeg -y -i {os.path.join(args.pyaviPath,'video_out.avi')} {os.path.join(args.pyaviPath,'video_out.mp4')}")
+	output2 = subprocess.call(command2, shell=True, stdout=None)
 
 def evaluate_col_ASD(tracks, scores, args):
 	txtPath = args.videoFolder + '/col_labels/fusion/*.txt' # Load labels
